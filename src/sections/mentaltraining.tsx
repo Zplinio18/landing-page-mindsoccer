@@ -26,7 +26,7 @@ function MentalTraining() {
           title={texts.mentalTraining.title}
           subtitle={texts.mentalTraining.description}
           text={texts.mentalTraining.text}
-          dialogLink="https://wa.me/553284596559?text=Olá%20Lucas%2C%20gostaria%20de%20saber%20mais%20sobre%20seu%20treinamento%20personalizado!"
+          dialogLink="https://wa.me/5532984596559?text=Olá%20Lucas%2C%20gostaria%20de%20saber%20mais%20sobre%20seu%20treinamento%20mental!%20🧠⚽"
         />
       </Container.Flex>
     </Container.Flex>

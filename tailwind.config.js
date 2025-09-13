@@ -24,6 +24,37 @@ export default {
         kaisei: ['"Kaisei Tokumin"', "sans‑serif"],
         exo2: ['"Exo 2"', "sans‑serif"],
       },
+      animation: {
+        "pulse-neon-fail": "pulse-neon-fail 4s infinite steps(1,end)",
+      },
+      keyframes: {
+        "pulse-neon-fail": {
+          "0%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "1.5%": { boxShadow: "none" },
+          "3.33%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "7.40%": { boxShadow: "none" },
+          "8.33%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "18%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "19%": { boxShadow: "none" },
+          "22%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "33.33%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+          "100%": {
+            boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",
+          },
+        },
+      },
     },
   },
   plugins: [],
