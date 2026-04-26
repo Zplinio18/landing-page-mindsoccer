@@ -5,9 +5,9 @@ import texts from "../utils/texts";
 
 function MentalTraining() {
   return (
-    <Container.Flex className="h-auto flex-col-reverse justify-between gap-4 bg-black laptop:h-screen laptop:flex-row">
+    <Container.Flex className="relative h-auto flex-col-reverse justify-between gap-4 bg-black laptop:h-screen laptop:flex-row">
       <Container.Flex
-        className="h-[65dvh] w-full bg-cover bg-center laptop:h-screen laptop:w-[70%]"
+        className="relative z-0 -mt-[105px] h-[65dvh] w-full bg-cover bg-[center_35%] laptop:h-screen laptop:w-[70%] laptop:bg-center"
         style={{
           backgroundImage: `
       linear-gradient(
@@ -21,12 +21,11 @@ function MentalTraining() {
       >
         <></>
       </Container.Flex>
-      <Container.Flex className="items-center justify-center pb-8 laptop:h-screen laptop:w-[60vw]">
+      <Container.Flex className="relative z-10 items-center justify-center pb-8 laptop:h-screen laptop:w-[60vw]">
         <TemplateBox.Default
           title={texts.mentalTraining.title}
           subtitle={texts.mentalTraining.description}
           text={texts.mentalTraining.text}
-          dialogLink="https://wa.me/5532984596559?text=Olá%20Lucas%2C%20gostaria%20de%20saber%20mais%20sobre%20seu%20treinamento%20mental!%20🧠⚽"
         />
       </Container.Flex>
     </Container.Flex>

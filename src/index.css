@@ -67,6 +67,24 @@
   }
 }
 
+/* Destaques rotativos na seção inicial mobile */
+@keyframes welcomeHighlight {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  10%,
+  28% {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+  36%,
+  100% {
+    opacity: 0;
+    transform: translateY(-68px);
+  }
+}
+
 /* Classes utilitárias */
 .animate-fade-in {
   animation-name: fadeIn;
@@ -92,11 +110,20 @@
   animation-delay: var(--anim-delay);
 }
 
+.animate-welcome-highlight {
+  animation-name: welcomeHighlight;
+  animation-duration: 12s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
 /* Respeitar preferências de movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-slide-left-fade,
-  .animate-slide-right-fade {
+  .animate-slide-right-fade,
+  .animate-welcome-highlight {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

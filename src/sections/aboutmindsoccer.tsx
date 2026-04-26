@@ -8,18 +8,18 @@ import { TemplateButton } from "../components/templates/Button";
 
 function AboutMindsoccer() {
   return (
-    <Container.Flex className="h-auto flex-col-reverse justify-between gap-4 bg-gradient-to-b from-primary to-black px-2 pt-8 laptop:h-screen laptop:flex-row laptop:pt-0">
+    <Container.Flex className="relative h-auto flex-col-reverse justify-between gap-4 bg-gradient-to-b from-primary to-black px-2 pt-8 laptop:h-screen laptop:flex-row laptop:pt-0">
       <Container.Flex
-        className="h-[80dvh] w-full bg-cover bg-center laptop:h-screen laptop:w-[70%]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[80dvh] w-full bg-cover bg-center opacity-45 laptop:pointer-events-auto laptop:static laptop:h-screen laptop:w-[70%] laptop:opacity-100"
         style={{
           backgroundImage: `url(${mindSoccerImg})`,
         }}
       >
         <></>
       </Container.Flex>
-      <Container.Flex className="flex-col justify-center gap-10 px-4 pt-4 laptop:h-screen laptop:w-[80vw]">
+      <Container.Flex className="relative z-10 flex-col justify-center gap-10 px-4 pt-4 laptop:h-screen laptop:w-[80vw]">
         <Container.Flex
-          className="animate-slide-left-fade h-[70px] w-[200px] bg-cover bg-center laptop:h-[100px] laptop:w-[300px]"
+          className="animate-slide-left-fade h-[88px] w-[250px] bg-cover bg-center laptop:h-[100px] laptop:w-[300px]"
           style={{
             backgroundImage: `url(${logoImg})`,
           }}
@@ -32,6 +32,7 @@ function AboutMindsoccer() {
         </Text.Title>
         <TemplateText.Block
           text={texts.mindsoccer.text.replaceAll("/n/n", "<br/> <br/>")}
+          mobile_scroll
           className="animate-slide-right-fade"
         />
         <TemplateButton.Link
