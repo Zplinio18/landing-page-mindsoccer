@@ -2,12 +2,16 @@ import { Container } from "./components/base/Container";
 import AboutMindsoccer from "./sections/aboutmindsoccer";
 import CustomTraining from "./sections/customtraining";
 import MentalTraining from "./sections/mentaltraining";
+import Testimonials from "./sections/testimonials";
+import TrainingTypes from "./sections/trainingtypes";
 import { FaWhatsapp } from "react-icons/fa";
 
 function App() {
   return (
     <Container.Flex className="w-full flex-col">
       <AboutMindsoccer />
+      <Testimonials />
+      <TrainingTypes />
       <CustomTraining />
       <MentalTraining />
       <a

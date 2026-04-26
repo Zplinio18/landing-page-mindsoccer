@@ -2,6 +2,6 @@ import TextDefault from "./TextDefault";
 import TextTitle from "./TextTitle";
 
 export const Text = {
-  Defaut: TextDefault,
+  Default: TextDefault,
   Title: TextTitle,
 };

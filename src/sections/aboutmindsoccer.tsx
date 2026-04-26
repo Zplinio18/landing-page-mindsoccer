@@ -8,7 +8,7 @@ import { TemplateButton } from "../components/templates/Button";
 
 function AboutMindsoccer() {
   return (
-    <Container.Flex className="relative h-auto flex-col-reverse justify-between gap-4 bg-gradient-to-b from-primary to-black px-2 pt-8 laptop:h-screen laptop:flex-row laptop:pt-0">
+    <Container.Flex className="relative h-auto flex-col-reverse justify-between gap-4 bg-gradient-to-b from-primary to-black px-2 pb-14 pt-8 laptop:h-screen laptop:flex-row laptop:pt-0">
       <Container.Flex
         className="pointer-events-none absolute inset-x-0 top-0 h-[80dvh] w-full bg-cover bg-center opacity-45 laptop:pointer-events-auto laptop:static laptop:h-screen laptop:w-[70%] laptop:opacity-100"
         style={{
