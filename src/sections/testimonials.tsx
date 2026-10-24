@@ -134,6 +134,21 @@ function Testimonials() {
   }, []);
 
   useEffect(() => {
+    const releaseMouse = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") setIsInteracting(false);
+    };
+    const releaseOnBlur = () => setIsInteracting(false);
+    window.addEventListener("pointerup", releaseMouse);
+    window.addEventListener("pointercancel", releaseMouse);
+    window.addEventListener("blur", releaseOnBlur);
+    return () => {
+      window.removeEventListener("pointerup", releaseMouse);
+      window.removeEventListener("pointercancel", releaseMouse);
+      window.removeEventListener("blur", releaseOnBlur);
+    };
+  }, []);
+
+  useEffect(() => {
     const carousel = carouselRef.current;
     if (!carousel) return;
     const observer = new IntersectionObserver(
@@ -196,11 +211,11 @@ function Testimonials() {
           tabIndex={0}
           aria-describedby="testimonials-navigation-hint"
           className="mx-auto w-full max-w-7xl select-none px-2 [-webkit-touch-callout:none] focus-visible:rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary"
-          onPointerEnter={(event) => {
-            if (event.pointerType === "mouse") setIsInteracting(true);
-          }}
-          onPointerLeave={(event) => {
-            if (event.pointerType === "mouse") setIsInteracting(false);
+          onPointerDown={(event) => {
+            if (event.pointerType === "mouse" && event.button === 0) {
+              setHasFocus(false);
+              setIsInteracting(true);
+            }
           }}
           onFocusCapture={(event) =>
             setHasFocus(event.target.matches(":focus-visible"))
@@ -223,7 +238,7 @@ function Testimonials() {
           <p id="testimonials-navigation-hint" className="sr-only">
             {isMobile
               ? "Deslize para os lados ou use as setas do teclado para trocar de depoimento. Segure o card para pausar."
-              : "O depoimento em destaque aparece no centro. Clique nos cards laterais ou use as setas do teclado para trocar. Passe o mouse sobre os cards para pausar."}
+              : "O depoimento em destaque aparece no centro. Clique nos cards laterais ou use as setas do teclado para trocar. Mantenha o botão do mouse pressionado sobre um card para pausar."}
           </p>
           <div
             className="touch-pan-y overflow-hidden py-2 tablet:py-8"
@@ -298,6 +313,7 @@ function Testimonials() {
                       />
                     )}
                     <span
+                      key={`${testimonial.id}-${isActive}-${reducedMotion}`}
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[15px] motion-reduce:hidden"
                     >
@@ -306,7 +322,6 @@ function Testimonials() {
                         style={{
                           animationPlayState:
                             paused || !isActive ? "paused" : "running",
-                          animationDelay: `${index * -1.2}s`,
                         }}
                       />
                       <span className="absolute inset-px rounded-[14px] bg-gradient-to-b from-[#0e1521] to-[#06090f]" />

@@ -26,7 +26,7 @@ export default {
       },
       animation: {
         "testimonial-progress": "testimonial-progress 7s linear forwards",
-        "testimonial-border": "testimonial-border 4s linear infinite",
+        "testimonial-border": "testimonial-border 7s linear forwards",
         "testimonial-shimmer": "testimonial-shimmer 2.2s ease-in-out infinite",
         "pulse-neon-fail": "pulse-neon-fail 4s infinite steps(1,end)",
       },
