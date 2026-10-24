@@ -15,7 +15,7 @@ function App() {
   }
 
   return (
-    <Container.Flex className="w-full flex-col">
+    <Container.Flex className="w-full flex-col bg-black">
       <HomeNavigation />
       <AboutMindsoccer />
       <CoachStory />

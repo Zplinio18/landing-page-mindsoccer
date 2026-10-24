@@ -14,7 +14,7 @@ export default function CoachStory() {
       id="sobre"
       tabIndex={-1}
       aria-labelledby="coach-story-title"
-      className="w-full scroll-mt-28 bg-black px-4 pb-8 pt-8 laptop:px-20 laptop:pb-12"
+      className="relative z-20 w-full scroll-mt-28 bg-transparent px-4 pb-8 pt-8 laptop:px-20 laptop:pb-12"
     >
       <SectionSeparator className="mb-12 laptop:mb-16" />
       <div className="mx-auto grid max-w-7xl gap-8 px-2 tablet:grid-cols-[1fr_1.5fr] tablet:gap-16">
