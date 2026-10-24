@@ -1,4 +1,5 @@
 interface TrainingTextProps {
+  headingId: string;
   title: string;
   subtitle: string;
   text: string;
@@ -6,6 +7,7 @@ interface TrainingTextProps {
 }
 
 export default function TrainingText({
+  headingId,
   title,
   subtitle,
   text,
@@ -20,9 +22,12 @@ export default function TrainingText({
         <span aria-hidden="true" className="h-px w-8 bg-blue-400/40" />
         <span className="text-slate-400">{subtitle}</span>
       </div>
-      <h3 className="max-w-lg font-jockey text-4xl leading-tight text-white laptop:text-[42px]">
+      <h2
+        id={headingId}
+        className="max-w-lg font-jockey text-4xl leading-tight text-white mobile:text-5xl laptop:text-6xl"
+      >
         {title}
-      </h3>
+      </h2>
       <p className="mt-7 font-exo2 text-lg leading-[1.85] text-slate-200 laptop:text-xl">
         {introduction}
       </p>

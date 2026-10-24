@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FaQuoteLeft, FaStar } from "react-icons/fa";
+import { FaQuoteLeft, FaStar, FaRedo } from "react-icons/fa";
 import SectionHeading from "../components/ui/section-heading";
 import SectionSeparator from "../components/ui/section-separator";
 import { readTestimonials } from "../lib/testimonials";
@@ -67,6 +67,8 @@ function TestimonialsSkeleton() {
 
 function Testimonials() {
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1130);
@@ -83,24 +85,40 @@ function Testimonials() {
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    setIsLoading(true);
+    setLoadError(false);
     readTestimonials(controller.signal)
       .then((items) => {
-        if (mounted) setTestimonials(items);
+        if (mounted) {
+          setTestimonials(items);
+          setActiveIndex(0);
+        }
       })
       .catch(() => {
-        /* Sem dados da planilha, a seção permanece oculta. */
+        if (mounted && !controller.signal.aborted) setLoadError(true);
       })
       .finally(() => {
-        window.clearTimeout(timeout);
         if (mounted) setIsLoading(false);
       });
     return () => {
       mounted = false;
       controller.abort();
-      window.clearTimeout(timeout);
     };
-  }, []);
+  }, [reloadKey]);
+
+  useEffect(() => {
+    if (!loadError) return;
+    const retryOnReconnect = () => setReloadKey((previous) => previous + 1);
+    const retryOnRestore = (event: PageTransitionEvent) => {
+      if (event.persisted) retryOnReconnect();
+    };
+    window.addEventListener("online", retryOnReconnect);
+    window.addEventListener("pageshow", retryOnRestore);
+    return () => {
+      window.removeEventListener("online", retryOnReconnect);
+      window.removeEventListener("pageshow", retryOnRestore);
+    };
+  }, [loadError]);
 
   useEffect(() => {
     const viewport = window.matchMedia("(max-width: 1129px)");
@@ -131,7 +149,7 @@ function Testimonials() {
       setActiveIndex((index + testimonials.length) % testimonials.length);
   }
 
-  if (!isLoading && testimonials.length === 0) return null;
+  if (!isLoading && !loadError && testimonials.length === 0) return null;
 
   return (
     <section
@@ -148,6 +166,27 @@ function Testimonials() {
       </div>
       {isLoading ? (
         <TestimonialsSkeleton />
+      ) : loadError ? (
+        <div className="mx-auto w-full max-w-7xl px-2">
+          <div className="flex flex-col items-start gap-5 rounded-2xl border border-white/10 bg-[#0e1521] p-6 font-exo2 tablet:flex-row tablet:items-center tablet:justify-between laptop:p-8">
+            <div role="status">
+              <p className="text-base font-medium text-slate-200">
+                Não foi possível carregar os depoimentos agora.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                Você pode tentar novamente sem sair da página.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReloadKey((previous) => previous + 1)}
+              className="inline-flex shrink-0 items-center gap-2.5 rounded-lg border border-secondary/50 bg-secondary/15 px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-secondary/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-400 motion-reduce:transition-none"
+            >
+              <FaRedo aria-hidden="true" className="text-xs" />
+              Tentar novamente
+            </button>
+          </div>
+        </div>
       ) : (
         <div
           ref={carouselRef}

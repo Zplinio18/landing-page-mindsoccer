@@ -5,7 +5,7 @@ const links = [
   { href: "#inicio", label: "Início" },
   { href: "#sobre", label: "O treinador" },
   { href: "#depoimentos", label: "Depoimentos" },
-  { href: "#treinamentos", label: "Personalizado" },
+  { href: "#treinamento-personalizado", label: "Personalizado" },
   { href: "#treinamento-mental", label: "Mental" },
 ];
 

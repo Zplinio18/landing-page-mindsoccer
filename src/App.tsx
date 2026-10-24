@@ -5,7 +5,6 @@ import AboutMindsoccer from "./sections/aboutmindsoccer";
 import CustomTraining from "./sections/customtraining";
 import MentalTraining from "./sections/mentaltraining";
 import Testimonials from "./sections/testimonials";
-import TrainingTypes from "./sections/trainingtypes";
 import { FaWhatsapp } from "react-icons/fa";
 
 import TestimonialAdmin from "./pages/TestimonialAdmin";
@@ -23,7 +22,6 @@ function App() {
       <div id="depoimentos" tabIndex={-1} className="w-full scroll-mt-28">
         <Testimonials />
       </div>
-      <TrainingTypes />
       <CustomTraining />
       <MentalTraining />
       <a
