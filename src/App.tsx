@@ -1,4 +1,6 @@
+import HomeNavigation from "./components/HomeNavigation";
 import { Container } from "./components/base/Container";
+import CoachStory from "./sections/coachstory";
 import AboutMindsoccer from "./sections/aboutmindsoccer";
 import CustomTraining from "./sections/customtraining";
 import MentalTraining from "./sections/mentaltraining";
@@ -6,11 +8,21 @@ import Testimonials from "./sections/testimonials";
 import TrainingTypes from "./sections/trainingtypes";
 import { FaWhatsapp } from "react-icons/fa";
 
+import TestimonialAdmin from "./pages/TestimonialAdmin";
+
 function App() {
+  if (window.location.pathname.replace(/\/$/, "") === "/admin/depoimentos") {
+    return <TestimonialAdmin />;
+  }
+
   return (
     <Container.Flex className="w-full flex-col">
+      <HomeNavigation />
       <AboutMindsoccer />
-      <Testimonials />
+      <CoachStory />
+      <div id="depoimentos" tabIndex={-1} className="w-full scroll-mt-28">
+        <Testimonials />
+      </div>
       <TrainingTypes />
       <CustomTraining />
       <MentalTraining />

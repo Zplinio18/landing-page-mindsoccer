@@ -25,9 +25,24 @@ export default {
         exo2: ['"Exo 2"', "sans‑serif"],
       },
       animation: {
+        "testimonial-progress": "testimonial-progress 7s linear forwards",
+        "testimonial-border": "testimonial-border 4s linear infinite",
+        "testimonial-shimmer": "testimonial-shimmer 2.2s ease-in-out infinite",
         "pulse-neon-fail": "pulse-neon-fail 4s infinite steps(1,end)",
       },
       keyframes: {
+        "testimonial-progress": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
+        "testimonial-border": {
+          "0%": { transform: "translate(-50%, -50%) rotate(0deg)" },
+          "100%": { transform: "translate(-50%, -50%) rotate(360deg)" },
+        },
+        "testimonial-shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
         "pulse-neon-fail": {
           "0%": {
             boxShadow: "0 0 5px #004094, 0 0 10px #004094, 0 0 15px #004094",

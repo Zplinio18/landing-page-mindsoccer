@@ -1,153 +1,384 @@
 import { useEffect, useRef, useState } from "react";
-import { Container } from "../components/base/Container";
-import { Text } from "../components/base/Text";
-import { FaStar } from "react-icons/fa";
-import texts from "../utils/texts";
+import { FaQuoteLeft, FaStar } from "react-icons/fa";
+import SectionHeading from "../components/ui/section-heading";
+import SectionSeparator from "../components/ui/section-separator";
+import { readTestimonials } from "../lib/testimonials";
+import type { Testimonial } from "../lib/testimonials";
+
+const cardClass =
+  "relative flex h-full min-h-[360px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#0e1521] to-[#06090f] p-6 laptop:p-8";
+
+function TestimonialsSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mx-auto w-full max-w-7xl px-2"
+    >
+      <span className="sr-only">Carregando depoimentos de pais e atletas…</span>
+      <div
+        aria-hidden="true"
+        className="grid grid-cols-1 gap-6 tablet:grid-cols-3"
+      >
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className={`${cardClass} ${index > 0 ? "hidden tablet:flex" : ""}`}
+          >
+            <div className="pointer-events-none absolute inset-0 animate-testimonial-shimmer bg-gradient-to-r from-transparent via-blue-200/[0.06] to-transparent motion-reduce:hidden" />
+            <div className="mb-7 flex items-center justify-between">
+              <div className="h-2 w-24 rounded-full bg-white/[0.07]" />
+              <FaQuoteLeft className="text-2xl text-secondary/30" />
+            </div>
+            <div className="mb-6 flex gap-1 text-xs text-amber-200/20">
+              {[0, 1, 2, 3, 4].map((star) => (
+                <FaStar key={star} />
+              ))}
+            </div>
+            <div className="space-y-3.5">
+              {["w-full", "w-[92%]", "w-full", "w-3/4", "w-1/2"].map(
+                (width, index) => (
+                  <div
+                    key={index}
+                    className={`h-3 rounded-full bg-white/[0.07] ${width}`}
+                  />
+                ),
+              )}
+            </div>
+            <div className="mt-auto flex items-center gap-3 border-t border-white/[0.07] pt-5">
+              <div className="h-10 w-10 rounded-full bg-secondary/20" />
+              <div className="flex-1 space-y-3">
+                <div className="h-3 w-1/3 rounded-full bg-white/10" />
+                <div className="h-2 w-2/3 rounded-full bg-white/[0.06]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p
+        aria-hidden="true"
+        className="mt-6 text-center font-exo2 text-xs tracking-wide text-slate-500"
+      >
+        Carregando histórias de evolução…
+      </p>
+    </div>
+  );
+}
 
 function Testimonials() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const [progress, setProgress] = useState(0);
-
-  const carouselDuration = 6000;
-
-  const filteredTestimonials = texts.testimonials.filter((t) =>
-    ["Fabrício", "Andréia", "Sheila"].includes(t.name)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1130);
+  const [reducedMotion, setReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-
-  const nextSlide = () => {
-    setActiveIndex((prev) => (prev + 1) % filteredTestimonials.length);
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 1130;
-      if (isMobile && scrollRef.current) {
-        const scrollAmount = scrollRef.current.offsetWidth * activeIndex;
-        scrollRef.current.scrollTo({
-          left: scrollAmount,
-          behavior: "smooth",
-        });
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    setProgress(0);
-    startTimeRef.current = Date.now();
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, [activeIndex]);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const paused = isInteracting || hasFocus || !isVisible;
 
   useEffect(() => {
-    const checkPauseAndScreen = () => {
-      const isMobile = window.innerWidth < 1130;
-      return isPaused || !isMobile;
-    };
-
-    if (checkPauseAndScreen()) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-
-    const interval = 50; 
-    timerRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const newProgress = (elapsed / carouselDuration) * 100;
-
-      if (newProgress >= 100) {
-        nextSlide();
-      } else {
-        setProgress(newProgress);
-      }
-    }, interval);
-
+    let mounted = true;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    readTestimonials(controller.signal)
+      .then((items) => {
+        if (mounted) setTestimonials(items);
+      })
+      .catch(() => {
+        /* Sem dados da planilha, a seção permanece oculta. */
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+        if (mounted) setIsLoading(false);
+      });
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      mounted = false;
+      controller.abort();
+      window.clearTimeout(timeout);
     };
-  }, [isPaused, activeIndex]);
+  }, []);
+
+  useEffect(() => {
+    const viewport = window.matchMedia("(max-width: 1129px)");
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateViewport = () => setIsMobile(viewport.matches);
+    const updateMotion = () => setReducedMotion(motion.matches);
+    viewport.addEventListener("change", updateViewport);
+    motion.addEventListener("change", updateMotion);
+    return () => {
+      viewport.removeEventListener("change", updateViewport);
+      motion.removeEventListener("change", updateMotion);
+    };
+  }, []);
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.25 },
+    );
+    observer.observe(carousel);
+    return () => observer.disconnect();
+  }, [isLoading]);
+
+  function select(index: number) {
+    if (testimonials.length > 0)
+      setActiveIndex((index + testimonials.length) % testimonials.length);
+  }
+
+  if (!isLoading && testimonials.length === 0) return null;
 
   return (
-    <Container.Flex className="w-full flex-col bg-black py-16 px-4 laptop:px-20 overflow-hidden">
-      <div className="w-full h-px bg-white/10 mb-8"></div>
-
-      <Container.Flex className="flex-col items-center gap-4 mb-12 animate-slide-left-fade">
-        <Text.Title className="text-4xl text-secondary laptop:text-6xl text-center uppercase">
-          DEPOIMENTOS DOS <span className="text-white">PAIS E ATLETAS</span>
-        </Text.Title>
-        <div className="h-1 w-24 bg-secondary"></div>
-      </Container.Flex>
-
-      <div className="relative w-full max-w-7xl mx-auto flex flex-col gap-6">
-        <div
-          ref={scrollRef}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-          className="flex tablet:grid tablet:grid-cols-3 gap-8 overflow-x-auto tablet:overflow-x-visible scrollbar-hide snap-x snap-mandatory pb-2"
-          style={{ scrollBehavior: "smooth" }}
-        >
-          {filteredTestimonials.map((testimonial, index) => (
-            <div
-              key={index}
-              className="min-w-full tablet:min-w-0 snap-center px-2"
-            >
-              <Container.Flex
-                className="flex-col gap-6 rounded-2xl border-t-4 border-secondary bg-gradient-to-b from-suport-100 to-suport-400 p-8 shadow-[0_0_15px_rgba(0,64,148,0.2)] h-full transition-transform hover:scale-[1.02]"
-              >
-                <Container.Flex className="gap-1">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <FaStar key={i} className="text-yellow-400 text-xl" />
-                  ))}
-                </Container.Flex>
-
-                <Text.Default className="text-lg text-white font-exo2 italic leading-relaxed">
-                  "{testimonial.content}"
-                </Text.Default>
-
-                <Container.Flex className="flex-col gap-1 mt-auto">
-                  <Text.Title className="text-xl text-secondary uppercase">
-                    {testimonial.name}
-                  </Text.Title>
-                  <Text.Default className="text-sm text-subtitle font-exo2">
-                    Responsável pelo atleta:{" "}
-                    <span className="text-white">{testimonial.athlete}</span> (
-                    {testimonial.age})
-                  </Text.Default>
-                </Container.Flex>
-              </Container.Flex>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-4 tablet:hidden">
-          <div className="flex justify-center w-full">
-            <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-secondary transition-all duration-75 ease-linear"
-                style={{ width: `${100 - progress}%` }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-2">
-            {filteredTestimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIndex(i)}
-                className={`h-2 rounded-full transition-all ${
-                  activeIndex === i ? "w-8 bg-secondary" : "w-2 bg-white/20"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+    <section
+      aria-label="Depoimentos de pais e atletas"
+      className="w-full overflow-hidden bg-black px-4 py-16 laptop:px-20"
+    >
+      <SectionSeparator className="mb-8" />
+      <div className="mb-10 laptop:mb-12">
+        <SectionHeading
+          label="Pais e atletas"
+          title="Depoimentos"
+          description="A experiência de quem faz parte dessa evolução, dentro e fora de campo."
+        />
       </div>
-    </Container.Flex>
+      {isLoading ? (
+        <TestimonialsSkeleton />
+      ) : (
+        <div
+          ref={carouselRef}
+          role="group"
+          aria-roledescription="carrossel"
+          aria-label="Experiências com a MindSoccer"
+          tabIndex={0}
+          aria-describedby="testimonials-navigation-hint"
+          className="mx-auto w-full max-w-7xl select-none px-2 [-webkit-touch-callout:none] focus-visible:rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary"
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse") setIsInteracting(true);
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === "mouse") setIsInteracting(false);
+          }}
+          onFocusCapture={(event) =>
+            setHasFocus(event.target.matches(":focus-visible"))
+          }
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget))
+              setHasFocus(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowRight") {
+              event.preventDefault();
+              select(activeIndex + 1);
+            }
+            if (event.key === "ArrowLeft") {
+              event.preventDefault();
+              select(activeIndex - 1);
+            }
+          }}
+        >
+          <p id="testimonials-navigation-hint" className="sr-only">
+            {isMobile
+              ? "Deslize para os lados ou use as setas do teclado para trocar de depoimento. Segure o card para pausar."
+              : "O depoimento em destaque aparece no centro. Clique nos cards laterais ou use as setas do teclado para trocar. Passe o mouse sobre os cards para pausar."}
+          </p>
+          <div
+            className="touch-pan-y overflow-hidden py-2 tablet:py-8"
+            onContextMenu={(event) => event.preventDefault()}
+            onTouchStart={(event) => {
+              const touch = event.touches[0];
+              touchStart.current = { x: touch.clientX, y: touch.clientY };
+              setIsInteracting(true);
+            }}
+            onTouchEnd={(event) => {
+              const touch = event.changedTouches[0];
+              const start = touchStart.current;
+              if (isMobile && start) {
+                const dx = touch.clientX - start.x;
+                const dy = touch.clientY - start.y;
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy))
+                  select(activeIndex + (dx < 0 ? 1 : -1));
+              }
+              touchStart.current = null;
+              setIsInteracting(false);
+            }}
+            onTouchCancel={() => {
+              touchStart.current = null;
+              setIsInteracting(false);
+            }}
+          >
+            <div
+              className="flex items-stretch gap-6 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none tablet:grid tablet:grid-cols-1"
+              style={{
+                transform: isMobile
+                  ? `translateX(calc(-${activeIndex} * (100% + 24px)))`
+                  : undefined,
+              }}
+            >
+              {testimonials.map((testimonial, index) => {
+                let offset =
+                  (index - activeIndex + testimonials.length) %
+                  testimonials.length;
+                if (offset > testimonials.length / 2)
+                  offset -= testimonials.length;
+                const isActive = index === activeIndex;
+                const isNeighbor = Math.abs(offset) === 1;
+                return (
+                  <article
+                    key={testimonial.id}
+                    aria-label={`${index + 1} de ${testimonials.length}: ${testimonial.author}`}
+                    aria-hidden={
+                      (isMobile ? !isActive : !isActive && !isNeighbor)
+                        ? true
+                        : undefined
+                    }
+                    aria-current={isActive ? "true" : undefined}
+                    className={`${cardClass} isolate w-full min-w-0 shrink-0 font-exo2 transition-[transform,opacity,border-color,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none tablet:col-start-1 tablet:row-start-1 tablet:w-[42%] tablet:max-w-[560px] tablet:justify-self-center ${!isMobile && isActive ? "border-secondary/60 shadow-[0_20px_60px_rgba(0,0,0,0.4)]" : ""}`}
+                    style={
+                      isMobile
+                        ? undefined
+                        : {
+                            transform: `translateX(${isActive ? 0 : Math.sign(offset) * (isNeighbor ? 78 : 125)}%) scale(${isActive ? 1 : isNeighbor ? 0.82 : 0.72})`,
+                            opacity: isActive ? 1 : isNeighbor ? 0.45 : 0,
+                            zIndex: isActive ? 20 : isNeighbor ? 10 : 0,
+                            pointerEvents:
+                              isActive || isNeighbor ? "auto" : "none",
+                          }
+                    }
+                  >
+                    {!isMobile && !isActive && isNeighbor && (
+                      <button
+                        type="button"
+                        aria-label={`Destacar depoimento de ${testimonial.author}`}
+                        onClick={() => select(index)}
+                        className="absolute inset-0 z-10 cursor-pointer rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-400"
+                      />
+                    )}
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[15px] motion-reduce:hidden"
+                    >
+                      <span
+                        className="absolute left-1/2 top-1/2 aspect-square w-[220%] animate-testimonial-border bg-[conic-gradient(from_0deg,transparent_0deg,transparent_270deg,#004094_310deg,#3b82f6_340deg,#93c5fd_355deg,transparent_360deg)]"
+                        style={{
+                          animationPlayState:
+                            paused || !isActive ? "paused" : "running",
+                          animationDelay: `${index * -1.2}s`,
+                        }}
+                      />
+                      <span className="absolute inset-px rounded-[14px] bg-gradient-to-b from-[#0e1521] to-[#06090f]" />
+                    </span>
+                    <div className="mb-7 flex items-center justify-between gap-4">
+                      <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-slate-500">
+                        <span className="mr-3 text-secondary">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        Uma história de evolução
+                      </span>
+                      <FaQuoteLeft
+                        aria-hidden="true"
+                        className="shrink-0 text-2xl text-secondary/50"
+                      />
+                    </div>
+                    <div
+                      aria-label={`${testimonial.rating} de 5 estrelas`}
+                      className="mb-5 flex gap-1 text-[11px] text-[#d5b477]"
+                    >
+                      {Array.from({ length: testimonial.rating }, (_, star) => (
+                        <FaStar aria-hidden="true" key={star} />
+                      ))}
+                    </div>
+                    <blockquote className="mb-8 flex-1 whitespace-pre-wrap break-words text-base leading-[1.85] text-slate-200">
+                      {testimonial.content}
+                    </blockquote>
+                    <footer className="flex items-center gap-3 border-t border-white/[0.07] pt-5">
+                      <span
+                        aria-hidden="true"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-secondary/30 bg-secondary/15 text-xs font-semibold text-slate-300"
+                      >
+                        {testimonial.author
+                          .trim()
+                          .split(/\s+/)
+                          .slice(0, 2)
+                          .map((name) => name[0])
+                          .join("")
+                          .toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-semibold text-white">
+                          {testimonial.author}
+                        </p>
+                        <p className="mt-1 break-words text-xs leading-relaxed text-slate-500">
+                          {testimonial.isAdult ? (
+                            "Atleta MindSoccer"
+                          ) : (
+                            <>
+                              Responsável por{" "}
+                              <span className="text-slate-400">
+                                {testimonial.athlete}
+                              </span>{" "}
+                              ·{" "}
+                              {String(testimonial.age).includes("anos")
+                                ? testimonial.age
+                                : `${testimonial.age} anos`}
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </footer>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+          {testimonials.length > 1 && (
+            <div className="mt-4 tablet:mx-auto tablet:max-w-sm">
+              <div className="flex gap-2" aria-hidden="true">
+                {testimonials.map((testimonial, index) => (
+                  <span
+                    key={testimonial.id}
+                    className="flex h-8 min-w-0 flex-1 items-center"
+                    aria-hidden="true"
+                  >
+                    <span className="relative block h-0.5 w-full overflow-hidden rounded-full bg-white/10">
+                      {index === activeIndex && (
+                        <span
+                          key={`${testimonial.id}-${reducedMotion}`}
+                          onAnimationEnd={() => {
+                            if (!paused && !reducedMotion)
+                              select(activeIndex + 1);
+                          }}
+                          className={`absolute inset-0 origin-left rounded-full bg-secondary ${reducedMotion ? "" : "animate-testimonial-progress"}`}
+                          style={{
+                            animationPlayState: paused ? "paused" : "running",
+                          }}
+                        />
+                      )}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <p
+                  aria-live="off"
+                  className="font-exo2 text-[11px] tracking-[0.14em] text-slate-500"
+                >
+                  <span className="text-slate-200">
+                    {String(activeIndex + 1).padStart(2, "0")}
+                  </span>
+                  <span className="mx-2 text-slate-700">/</span>
+                  {String(testimonials.length).padStart(2, "0")}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
